@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+venv/
+env/
+grocery_store.db
+.env

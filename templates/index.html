@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshMart | Premium Grocery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-emerald-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-black flex items-center gap-2">
+                <i class="fa-solid fa-store text-yellow-300"></i> FreshMart
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="toggleHistory()" class="text-emerald-100 hover:text-white font-bold transition flex items-center gap-1">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="my_orders">My Orders</span>
+                </button>
+                <button onclick="toggleLanguage()" class="flex items-center gap-2 font-bold text-sm bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500">
+                    <i class="fa-solid fa-language text-yellow-200"></i> <span id="lang-text">EN</span>
+                </button>
+                <button onclick="toggleCart()" class="bg-yellow-400 text-emerald-900 hover:bg-yellow-500 px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-md transition">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span id="cart-count" class="bg-white text-emerald-900 text-xs px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h2 class="text-2xl font-bold border-l-4 border-emerald-600 pl-3 text-gray-700" data-i18n="all_products">All Products</h2>
+            
+            <!-- 🌟 MASTER UPDATE: Search Bar -->
+            <div class="relative w-full md:w-72">
+                <input type="text" id="search-box" onkeyup="searchProducts()" placeholder="Search products..." class="w-full pl-10 pr-4 py-2 border rounded-xl focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+            </div>
+        </div>
+
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </main>
+
+    <!-- 🌟 MASTER UPDATE: Footer -->
+    <footer class="bg-slate-800 text-gray-300 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="font-bold text-white mb-2"><i class="fa-solid fa-store text-emerald-400"></i> FreshMart Pro</p>
+            <p class="text-sm">Built with FastAPI, Python & Tailwind CSS.</p>
+            <p class="text-xs mt-4 text-gray-500">&copy; 2026 FreshMart. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex justify-end">
+        <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col p-6">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 class="text-xl font-bold" data-i18n="checkout">Checkout</h3>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-red-500 text-3xl">&times;</button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto border-b border-gray-100 mb-4 pb-2"></div>
+            <form id="checkout-form" onsubmit="placeOrder(event)" class="space-y-3">
+                <div class="flex justify-between text-lg font-black text-gray-700 mb-2">
+                    <span data-i18n="total">Total:</span>
+                    <span id="cart-total" class="text-emerald-600">৳0.00</span>
+                </div>
+                <input type="text" id="c-name" required placeholder="Name / নাম" class="w-full px-4 py-2 border rounded-lg focus:outline-emerald-500">
+                <input type="tel" id="c-phone" required placeholder="Phone / ফোন নম্বর" class="w-full px-4 py-2 border rounded-lg focus:outline-emerald-500">
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition" data-i18n="confirm_order">Place Order</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order History Modal -->
+    <div id="history-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex justify-center items-center">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 m-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-emerald-600" data-i18n="order_history">Order History</h3>
+                <button onclick="toggleHistory()" class="text-gray-400 hover:text-red-500 text-3xl">&times;</button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input type="tel" id="search-phone" placeholder="Phone No..." class="flex-1 px-4 py-2 border rounded-lg">
+                <button onclick="fetchHistory()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold">Search</button>
+            </div>
+            <div id="history-content" class="flex-1 overflow-y-auto space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let allProducts = [];
+        let currentLang = localStorage.getItem('freshmart_lang') || 'en';
+
+        const i18n = {
+            en: { my_orders: "My Orders", all_products: "All Products", checkout: "Shopping Cart", total: "Total:", confirm_order: "Confirm Order", order_history: "Order History", buy: "Add to Cart", stock_out: "Out of Stock", success: "Order placed successfully!", stock: "Stock:", search_placeholder: "Search products..." },
+            bn: { my_orders: "অর্ডার হিস্টরি", all_products: "আমাদের পণ্য", checkout: "শপিং কার্ট", total: "মোট বিল:", confirm_order: "অর্ডার করুন", order_history: "আপনার অর্ডারসমূহ", buy: "কার্টে যোগ করুন", stock_out: "স্টক শেষ", success: "অর্ডার সফলভাবে সম্পন্ন হয়েছে!", stock: "স্টক:", search_placeholder: "পণ্য খুঁজুন..." }
+        };
+
+        const emojiMap = { "Rice": "🍚", "Dal": "🥣", "Chicken": "🍗", "Eggs": "🥚", "Oil": "🛢️", "Potato": "🥔", "Onion": "🧅", "Milk": "🥛", "Fish": "🐟", "Beef": "🥩", "Sugar": "🍬", "Salt": "🧂" };
+
+        function t_val(str) {
+            if(!str) return '';
+            const parts = str.split('|');
+            return currentLang === 'en' ? parts[0] : (parts[1] || parts[0]);
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'bn' : 'en';
+            localStorage.setItem('freshmart_lang', currentLang);
+            applyLanguage();
+            searchProducts(); // Re-render with current search filter
+            updateCart();
+        }
+
+        function applyLanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.innerText = i18n[currentLang][el.getAttribute('data-i18n')];
+            });
+            document.getElementById('lang-text').innerText = currentLang === 'en' ? 'EN' : 'BN';
+            document.getElementById('search-box').placeholder = i18n[currentLang].search_placeholder;
+        }
+
+        async function loadProducts() {
+            const res = await fetch('/api/products/');
+            allProducts = await res.json();
+            renderProducts(allProducts);
+        }
+
+        // 🌟 MASTER UPDATE: Search Functionality
+        function searchProducts() {
+            const query = document.getElementById('search-box').value.toLowerCase();
+            const filteredProducts = allProducts.filter(p => {
+                const name = t_val(p.name).toLowerCase();
+                return name.includes(query);
+            });
+            renderProducts(filteredProducts);
+        }
+
+        function renderProducts(productsToRender) {
+            const container = document.getElementById('product-list');
+            if(productsToRender.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 col-span-full text-center py-10">No products found.</p>`;
+                return;
+            }
+            container.innerHTML = productsToRender.map(p => {
+                const name = t_val(p.name);
+                const unit = t_val(p.unit);
+                let icon = "🛍️";
+                for (let key in emojiMap) { if(p.name.includes(key)) icon = emojiMap[key]; }
+
+                return `
+                <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl hover:border-emerald-200 border border-gray-100 transition-all p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="h-24 bg-gray-50 rounded-xl mb-4 flex items-center justify-center text-5xl">${icon}</div>
+                        <h3 class="font-bold text-lg text-gray-800">${name}</h3>
+                        <p class="text-gray-500 text-sm mb-4 mt-1 font-medium">৳${p.price} / ${unit}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold mb-3 ${p.stock_quantity > 0 ? 'text-emerald-600 bg-emerald-50 inline-block px-2 py-1 rounded' : 'text-red-500 bg-red-50 inline-block px-2 py-1 rounded'}">
+                            ${i18n[currentLang].stock} ${p.stock_quantity}
+                        </p>
+                        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" ${p.stock_quantity <= 0 ? 'disabled' : ''} 
+                            class="w-full py-2.5 rounded-xl font-bold text-white shadow-sm ${p.stock_quantity > 0 ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition' : 'bg-gray-300 cursor-not-allowed'}">
+                            ${p.stock_quantity > 0 ? i18n[currentLang].buy : i18n[currentLang].stock_out}
+                        </button>
+                    </div>
+                </div>`
+            }).join('');
+        }
+
+        function addToCart(id, raw_name, price) {
+            const item = cart.find(i => i.id === id);
+            if (item) item.qty += 1;
+            else cart.push({ id, raw_name, price, qty: 1 });
+            updateCart();
+        }
+
+        function updateCart() {
+            document.getElementById('cart-count').innerText = cart.reduce((s, i) => s + i.qty, 0);
+            let total = 0;
+            document.getElementById('cart-items').innerHTML = cart.map(i => {
+                total += i.price * i.qty;
+                return `<div class="flex justify-between py-3 border-b text-gray-700">
+                    <div><span class="font-bold">${t_val(i.raw_name)}</span> <span class="text-xs text-gray-400">x${i.qty}</span></div>
+                    <span class="font-bold text-emerald-600">৳${i.price * i.qty}</span>
+                </div>`;
+            }).join('');
+            document.getElementById('cart-total').innerText = `৳${total}`;
+        }
+
+        async function placeOrder(e) {
+            e.preventDefault();
+            if(cart.length === 0) return;
+            const payload = { customer_name: document.getElementById('c-name').value, customer_phone: document.getElementById('c-phone').value, items: cart.map(i => ({ product_id: i.id, quantity: i.qty })) };
+            const res = await fetch('/api/orders/', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            if(res.ok) {
+                alert(i18n[currentLang].success);
+                cart = []; updateCart(); toggleCart();
+                document.getElementById('checkout-form').reset();
+                loadProducts();
+            }
+        }
+
+        async function fetchHistory() {
+            const phone = document.getElementById('search-phone').value;
+            const res = await fetch(`/api/orders/${phone}`);
+            const orders = await res.json();
+            document.getElementById('history-content').innerHTML = orders.map(o => `
+                <div class="border rounded-lg p-4 bg-gray-50">
+                    <div class="flex justify-between font-bold mb-2 border-b pb-2"><span>Order #${o.id}</span><span class="text-emerald-600">৳${o.total_amount}</span></div>
+                    <div class="text-sm text-gray-700 font-medium">${o.items.map(i => `<p>✔️ ${t_val(i.product_name)} - x${i.quantity}</p>`).join('')}</div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCart() { document.getElementById('cart-modal').classList.toggle('hidden'); }
+        function toggleHistory() { document.getElementById('history-modal').classList.toggle('hidden'); }
+
+        applyLanguage(); loadProducts();
+    </script>
+</body>
+</html>
